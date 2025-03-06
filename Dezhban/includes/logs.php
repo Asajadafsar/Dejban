@@ -3,7 +3,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// ایجاد جدول لاگ‌ها هنگام فعال‌سازی پلاگین
+// Create logs table when plugin is activated
 function dejban_create_logs_table() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'dejban_logs';
@@ -22,7 +22,7 @@ function dejban_create_logs_table() {
 }
 register_activation_hook(__FILE__, 'dejban_create_logs_table');
 
-// ذخیره لاگ در دیتابیس
+// Save the log to the database
 function dejban_log_event($event_type) {
     global $wpdb;
     $table_name = $wpdb->prefix . 'dejban_logs';
@@ -34,7 +34,7 @@ function dejban_log_event($event_type) {
     ));
 }
 
-// مثال: ثبت ورودهای ناموفق
+// Example: Log failed logins
 function dejban_failed_login($username) {
     dejban_log_event('ورود ناموفق: ' . $username);
 }

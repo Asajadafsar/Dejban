@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 function dejban_block_rest_users($response, $server, $request) {
-    // بررسی آیا تنظیم فعال است یا نه
+    // Check if the setting is active or not
     $rest_protection = get_option('dejban_rest_protection', 'enabled');
 
     if ($rest_protection === 'enabled' && strpos($request->get_route(), '/wp/v2/users') !== false) {
@@ -17,7 +17,7 @@ function dejban_block_rest_users($response, $server, $request) {
     return $response;
 }
 add_filter('rest_pre_dispatch', 'dejban_block_rest_users', 10, 3);
-// اجرای محافظت از بروت فورس در ورود به وردپرس
+// Implement brute force protection on WordPress login
 function dejban_check_bruteforce() {
     if (get_option('dejban_bruteforce_enabled') !== 'enabled') {
         return;
@@ -33,7 +33,7 @@ function dejban_check_bruteforce() {
 }
 add_action('wp_login_failed', 'dejban_check_bruteforce');
 
-// ثبت تلاش‌های ناموفق در دیتابیس
+// Record failed attempts in the database
 function dejban_track_failed_login($username) {
     if (get_option('dejban_bruteforce_enabled') !== 'enabled') {
         return;

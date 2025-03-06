@@ -1,9 +1,9 @@
 <?php
 if (!defined('ABSPATH')) {
-    exit; // جلوگیری از دسترسی مستقیم
+    exit; 
 }
 
-// افزودن منوی اصلی پلاگین
+// Add the plugin's main menu
 function dejban_add_admin_menu() {
     add_menu_page(
         'دژبان امنیتی', 
@@ -44,7 +44,7 @@ function dejban_add_admin_menu() {
 }
 add_action('admin_menu', 'dejban_add_admin_menu');
 
-// صفحه داشبورد پلاگین
+// Dashbord
 function dejban_dashboard_page() {
     ?>
     <div class="wrap dejban-dashboard">
@@ -54,7 +54,7 @@ function dejban_dashboard_page() {
     <?php
 }
 
-// صفحه تنظیمات امنیت کاربران
+// settings
 function dejban_user_security_page() {
     $rest_protection = get_option('dejban_rest_protection', 'enabled');
     ?>
@@ -80,7 +80,7 @@ function dejban_user_security_page() {
     <?php
 }
 
-// صفحه تنظیمات بروت فورس
+// bruteforce
 function dejban_bruteforce_protection_page() {
     $bruteforce_enabled = get_option('dejban_bruteforce_enabled', 'enabled');
     $bruteforce_attempts = get_option('dejban_bruteforce_attempts', 5);
@@ -114,7 +114,7 @@ function dejban_bruteforce_protection_page() {
     <?php
 }
 
-// ثبت تنظیمات در دیتابیس
+// save to database
 function dejban_register_settings() {
     register_setting('dejban_settings_group', 'dejban_rest_protection');
     register_setting('dejban_bruteforce_settings_group', 'dejban_bruteforce_enabled');
