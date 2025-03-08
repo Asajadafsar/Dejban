@@ -109,4 +109,24 @@ function disable_directory_listing() {
     }
 }
 add_action('init', 'disable_directory_listing');
+
+// جلوگیری از SQL Injection
+function dejban_sql_injection_protection($query) {
+    // List of common SQL injection patterns (can be expanded)
+    $patterns = [
+        "/\b(select|insert|update|delete|drop|union|table|from|where|limit)\b/i", // SQL keywords
+        "/\b(or|and)\s+\d+(\s*=\s*\d+)?/i", // SQL boolean injections
+        "/'(\s*--|\s*#|;|\s*--|\s*\/\*)/i" // Comment injections
+    ];
+
+    foreach ($patterns as $pattern) {
+        if (preg_match($pattern, $query)) {
+            wp_die(__('🚫 درخواست SQL مشکوک شناسایی شد! درخواست شما مسدود شد.', 'dejban-security'));
+        }
+    }
+    return $query;
+}
+
+// Correctly pass one argument to the function
+add_filter('query', 'dejban_sql_injection_protection');
 ?>

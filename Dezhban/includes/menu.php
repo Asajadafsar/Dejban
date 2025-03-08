@@ -50,20 +50,106 @@ function dejban_add_admin_menu() {
         'dejban_disable_wp_version',
         'dejban_disable_wp_version_page'
     );
+
+    // Add SQL Injection protection submenu
+    add_submenu_page(
+        'dejban_security',
+        'محافظت از SQL Injection',
+        'SQL Injection',
+        'manage_options',
+        'dejban_sql_injection_protection',
+        'dejban_sql_injection_protection_page'
+    );
 }
 add_action('admin_menu', 'dejban_add_admin_menu');
 
-// Dashboard
+// Dashboard with Reports and Analytics
 function dejban_dashboard_page() {
+    global $wpdb;
+
+    // Get Analytics Data (e.g., brute force attempts and REST API access attempts)
+    $brute_force_attempts = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}dejban_logs WHERE event_type = 'bruteforce'");  
+    $rest_api_attempts = $wpdb->get_var("SELECT COUNT(*) FROM {$wpdb->prefix}dejban_logs WHERE event_type = 'rest_api_access'");
+
     ?>
     <div class="wrap dejban-dashboard">
         <h1>🛡️ داشبورد دژبان</h1>
         <p>به افزونه امنیتی دژبان خوش آمدید!</p>
+
+        <h2>📊 آمار و گزارشات امنیتی</h2>
+        <table class="widefat fixed striped dejban-dashboard-table">
+            <thead>
+                <tr>
+                    <th>گزارش</th>
+                    <th>تعداد</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>تعداد تلاش‌های بروت فورس</td>
+                    <td><?php echo $brute_force_attempts; ?></td>
+                </tr>
+                <tr>
+                    <td>تعداد تلاش‌های دسترسی به REST API</td>
+                    <td><?php echo $rest_api_attempts; ?></td>
+                </tr>
+                <!-- Add more analytics reports here -->
+            </tbody>
+        </table>
+
+        <h2>📑 گزارشات اخیر</h2>
+        <table class="widefat fixed striped dejban-reports-table">
+            <thead>
+                <tr>
+                    <th>نوع رویداد</th>
+                    <th>زمان رویداد</th>
+                    <th>آی‌پی کاربر</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php
+                // Fetch latest 10 events from logs (e.g., brute force, REST API)
+                $logs = $wpdb->get_results("SELECT * FROM {$wpdb->prefix}dejban_logs ORDER BY event_time DESC LIMIT 10");
+                foreach ($logs as $log) : ?>
+                    <tr>
+                        <td><?php echo esc_html($log->event_type); ?></td>
+                        <td><?php echo esc_html($log->event_time); ?></td>
+                        <td><?php echo esc_html($log->user_ip); ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
     <?php
 }
 
-// settings
+// SQL Injection Protection Page
+function dejban_sql_injection_protection_page() {
+    $sql_injection_protection = get_option('dejban_sql_injection_protection', 'enabled');
+    ?>
+    <div class="wrap dejban-settings">
+        <h1>🛡️ تنظیمات محافظت از SQL Injection</h1>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('dejban_sql_injection_settings_group');
+            do_settings_sections('dejban_sql_injection_settings_group');
+            ?>
+            <table class="form-table">
+                <tr>
+                    <th scope="row">🔒 فعال‌سازی محافظت از SQL Injection</th>
+                    <td>
+                        <input type="checkbox" name="dejban_sql_injection_protection" value="enabled" <?php checked($sql_injection_protection, 'enabled'); ?> />
+                        <label>فعال کردن محافظت از حملات SQL Injection</label>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
+// Security Reports (Brute Force, REST API) Page
 function dejban_user_security_page() {
     $rest_protection = get_option('dejban_rest_protection', 'enabled');
     ?>
@@ -89,7 +175,7 @@ function dejban_user_security_page() {
     <?php
 }
 
-// bruteforce
+// Bruteforce Protection Settings
 function dejban_bruteforce_protection_page() {
     $bruteforce_enabled = get_option('dejban_bruteforce_enabled', 'enabled');
     $bruteforce_attempts = get_option('dejban_bruteforce_attempts', 5);
@@ -136,37 +222,26 @@ function dejban_disable_wp_version_page() {
             <li>🔒 در صورت غیرفعال کردن نمایش نسخه، هکرها نمی‌توانند بدانند که شما از وردپرس استفاده می‌کنید یا نه.</li>
         </ul>
         <label><strong>فعال کردن این گزینه به دلیل دلایل بالا به‌طور پیش‌فرض توصیه می‌شود.</strong></label>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('dejban_version_settings_group');
+            do_settings_sections('dejban_version_settings_group');
+            ?>
+            <table class="form-table">
+
+            </table>
+        </form>
     </div>
     <?php
 }
 
-// save to database
+?>
+// Register settings for each section
 function dejban_register_settings() {
-    register_setting('dejban_settings_group', 'dejban_rest_protection');
+    register_setting('dejban_sql_injection_settings_group', 'dejban_sql_injection_protection');
     register_setting('dejban_bruteforce_settings_group', 'dejban_bruteforce_enabled');
     register_setting('dejban_bruteforce_settings_group', 'dejban_bruteforce_attempts');
-    register_setting('dejban_version_settings_group', 'dejban_disable_wp_version');
+    register_setting('dejban_wp_version_settings_group', 'dejban_disable_wp_version');
+    register_setting('dejban_settings_group', 'dejban_rest_protection');
 }
 add_action('admin_init', 'dejban_register_settings');
-
-// نمایش پیام موفقیت بعد از ذخیره تنظیمات
-function dejban_admin_notice() {
-    if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
-        ?>
-        <div class="updated notice is-dismissible">
-            <p>✅ تنظیمات ذخیره شد رفیقم! 🎉</p>
-        </div>
-        <?php
-    }
-}
-add_action('admin_notices', 'dejban_admin_notice');
-
-// Disable WP version from HTTP header when option is enabled
-function dejban_check_disable_wp_version() {
-    $version_disable = get_option('dejban_disable_wp_version', 'enabled');
-    if ($version_disable == 'enabled') {
-        remove_action('wp_head', 'wp_generator');
-    }
-}
-add_action('wp', 'dejban_check_disable_wp_version');
-?>
