@@ -234,8 +234,6 @@ function dejban_disable_wp_version_page() {
     </div>
     <?php
 }
-
-?>
 // Register settings for each section
 function dejban_register_settings() {
     register_setting('dejban_sql_injection_settings_group', 'dejban_sql_injection_protection');
@@ -245,3 +243,5 @@ function dejban_register_settings() {
     register_setting('dejban_settings_group', 'dejban_rest_protection');
 }
 add_action('admin_init', 'dejban_register_settings');
+
+?>

@@ -119,14 +119,21 @@ function dejban_sql_injection_protection($query) {
         "/'(\s*--|\s*#|;|\s*--|\s*\/\*)/i" // Comment injections
     ];
 
+    // Skip security check for login and admin requests
+    if (is_admin() || strpos($query, 'wp-login') !== false || strpos($query, 'admin') !== false) {
+        return $query;
+    }
+
     foreach ($patterns as $pattern) {
         if (preg_match($pattern, $query)) {
             wp_die(__('🚫 درخواست SQL مشکوک شناسایی شد! درخواست شما مسدود شد.', 'dejban-security'));
         }
     }
+
     return $query;
 }
 
 // Correctly pass one argument to the function
 add_filter('query', 'dejban_sql_injection_protection');
+
 ?>
