@@ -63,6 +63,17 @@ function dejban_add_admin_menu() {
 }
 add_action('admin_menu', 'dejban_add_admin_menu');
 
+// Add notice function at the top of the file after the initial check
+function dejban_admin_notice() {
+    if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
+        ?>
+        <div class="notice notice-success is-dismissible">
+            <p>🎉 تنظیمات با موفقیت ذخیره شد.</p>
+        </div>
+        <?php
+    }
+}
+
 // Dashboard with Reports and Analytics
 function dejban_dashboard_page() {
     global $wpdb;
@@ -129,6 +140,7 @@ function dejban_sql_injection_protection_page() {
     ?>
     <div class="wrap dejban-settings">
         <h1>🛡️ تنظیمات محافظت از SQL Injection</h1>
+        <?php dejban_admin_notice(); ?>
         <form method="post" action="options.php">
             <?php
             settings_fields('dejban_sql_injection_settings_group');
@@ -155,6 +167,7 @@ function dejban_user_security_page() {
     ?>
     <div class="wrap dejban-settings">
         <h1>🛡️ تنظیمات امنیت کاربران</h1>
+        <?php dejban_admin_notice(); ?>
         <form method="post" action="options.php">
             <?php
             settings_fields('dejban_settings_group');
@@ -182,6 +195,7 @@ function dejban_bruteforce_protection_page() {
     ?>
     <div class="wrap dejban-settings">
         <h1>🚨 تنظیمات محافظت از بروت فورس</h1>
+        <?php dejban_admin_notice(); ?>
         <form method="post" action="options.php">
             <?php
             settings_fields('dejban_bruteforce_settings_group');
@@ -215,6 +229,7 @@ function dejban_disable_wp_version_page() {
     ?>
     <div class="wrap dejban-settings">
         <h1>⚙️ تنظیمات غیرفعال کردن نسخه وردپرس</h1>
+        <?php dejban_admin_notice(); ?>
         <p>این گزینه به‌طور پیش‌فرض فعال است تا از هکرها و ربات‌ها جلوگیری کند. در اینجا دلایل مختلفی برای فعال بودن این ویژگی آورده شده است:</p>
         <ul>
             <li>🚫 جلوگیری از شناسایی نسخه دقیق وردپرس شما که می‌تواند به هکرها کمک کند تا آسیب‌پذیری‌های خاص نسخه شما را شناسایی کنند.</li>

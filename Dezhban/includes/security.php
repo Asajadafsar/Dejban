@@ -112,17 +112,19 @@ add_action('init', 'disable_directory_listing');
 
 // جلوگیری از SQL Injection
 function dejban_sql_injection_protection($query) {
+    // Skip security check for login and admin requests
+    if (is_admin() || strpos($query, 'wp-login.php') !== false || strpos($query, 'admin') !== false) {
+        return $query;
+    }
+
     // List of common SQL injection patterns (can be expanded)
     $patterns = [
         "/\b(select|insert|update|delete|drop|union|table|from|where|limit)\b/i", // SQL keywords
         "/\b(or|and)\s+\d+(\s*=\s*\d+)?/i", // SQL boolean injections
         "/'(\s*--|\s*#|;|\s*--|\s*\/\*)/i" // Comment injections
     ];
-
-    // Skip security check for login and admin requests
-    if (is_admin() || strpos($query, 'wp-login') !== false || strpos($query, 'admin') !== false) {
-        return $query;
-    }
+    // Fix for SQL Injection
+    $query = stripslashes($query);
 
     foreach ($patterns as $pattern) {
         if (preg_match($pattern, $query)) {
@@ -132,8 +134,6 @@ function dejban_sql_injection_protection($query) {
 
     return $query;
 }
-
-// Correctly pass one argument to the function
-add_filter('query', 'dejban_sql_injection_protection');
+add_filter('query', 'dejban_sql_injection_protection', 10, 2);
 
 ?>
