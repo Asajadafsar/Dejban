@@ -110,30 +110,26 @@ function disable_directory_listing() {
 }
 add_action('init', 'disable_directory_listing');
 
-// جلوگیری از SQL Injection
-function dejban_sql_injection_protection($query) {
-    // Skip security check for login and admin requests
-    if (is_admin() || strpos($query, 'wp-login.php') !== false || strpos($query, 'admin') !== false) {
-        return $query;
+function dejban_secure_queries($query) {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
     }
 
-    // List of common SQL injection patterns (can be expanded)
-    $patterns = [
-        "/\b(select|insert|update|delete|drop|union|table|from|where|limit)\b/i", // SQL keywords
-        "/\b(or|and)\s+\d+(\s*=\s*\d+)?/i", // SQL boolean injections
-        "/'(\s*--|\s*#|;|\s*--|\s*\/\*)/i" // Comment injections
+    $forbidden_patterns = [
+        "/\b(select|insert|update|delete|drop|union|table|from|where|limit)\b/i",
+        "/\b(or|and)\s+\d+(\s*=\s*\d+)?/i",
+        "/'(\s*--|\s*#|;|\s*--|\s*\/\*)/i"
     ];
-    // Fix for SQL Injection
-    $query = stripslashes($query);
 
-    foreach ($patterns as $pattern) {
-        if (preg_match($pattern, $query)) {
-            wp_die(__('🚫 درخواست SQL مشکوک شناسایی شد! درخواست شما مسدود شد.', 'dejban-security'));
+    foreach ($forbidden_patterns as $pattern) {
+        if (preg_match($pattern, $query->get('s'))) {
+            wp_redirect(home_url('/404'));
+            exit;
         }
     }
-
-    return $query;
 }
-add_filter('query', 'dejban_sql_injection_protection', 10, 2);
+add_action('pre_get_posts', 'dejban_secure_queries');
+
+
 
 ?>
