@@ -15,7 +15,7 @@ function dejban_block_rest_users($response, $server, $request) {
         return new WP_Error(
             'rest_forbidden',
             __('🚫 دسترسی غیرمجاز!', 'dejban-security'),
-            array('status' => 404)
+            array('status' => 403) // Changed status from 404 to 403 for unauthorized access
         );
     }
     return $response;
@@ -110,26 +110,15 @@ function disable_directory_listing() {
 }
 add_action('init', 'disable_directory_listing');
 
-function dejban_secure_queries($query) {
-    if (is_admin() || !$query->is_main_query()) {
-        return;
-    }
-
-    $forbidden_patterns = [
-        "/\b(select|insert|update|delete|drop|union|table|from|where|limit)\b/i",
-        "/\b(or|and)\s+\d+(\s*=\s*\d+)?/i",
-        "/'(\s*--|\s*#|;|\s*--|\s*\/\*)/i"
-    ];
-
-    foreach ($forbidden_patterns as $pattern) {
-        if (preg_match($pattern, $query->get('s'))) {
-            wp_redirect(home_url('/404'));
-            exit;
-        }
-    }
+// جلوگیری از نمایش سورس کد و ابزارهای توسعه مرورگر
+function dejban_disable_view_source() {
+    ?>
+    <script type="text/javascript">
+        document.addEventListener("contextmenu", function(e) {
+            e.preventDefault();
+            return false;
+        });
+    </script>
+    <?php
 }
-add_action('pre_get_posts', 'dejban_secure_queries');
-
-
-
-?>
+add_action('wp_footer', 'dejban_disable_view_source');
