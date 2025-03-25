@@ -60,7 +60,10 @@ function dejban_add_admin_menu() {
         'dejban_sql_injection_protection',
         'dejban_sql_injection_protection_page'
     );
+    
 }
+
+
 add_action('admin_menu', 'dejban_add_admin_menu');
 
 // Add notice function at the top of the file after the initial check
@@ -243,8 +246,15 @@ function dejban_disable_wp_version_page() {
             do_settings_sections('dejban_version_settings_group');
             ?>
             <table class="form-table">
-
+                <tr>
+                    <th scope="row">🔒 غیرفعال کردن نمایش نسخه وردپرس</th>
+                    <td>
+                        <input type="checkbox" name="dejban_disable_wp_version" value="enabled" <?php checked($version_disable, 'enabled'); ?> />
+                        <label>مخفی کردن نسخه وردپرس</label>
+                    </td>
+                </tr>
             </table>
+            <?php submit_button(); ?>
         </form>
     </div>
     <?php
@@ -256,7 +266,12 @@ function dejban_register_settings() {
     register_setting('dejban_bruteforce_settings_group', 'dejban_bruteforce_attempts');
     register_setting('dejban_wp_version_settings_group', 'dejban_disable_wp_version');
     register_setting('dejban_settings_group', 'dejban_rest_protection');
+    register_setting('dejban_hide_view_page_source_settings_group', 'dejban_hide_view_page_source');
 }
+
+
+
 add_action('admin_init', 'dejban_register_settings');
 
-?>
+?>ر
+
